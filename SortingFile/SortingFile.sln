@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SortingFile", "SortingFile.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileGenerator", "..\FileGenerator\FileGenerator.csproj", "{0FC43143-A41B-48EB-A404-12EAE8769CAD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utilities", "..\Utilities\Utilities.csproj", "{972DC2AF-CA24-4C48-B019-F18DDA810EAB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{0FC43143-A41B-48EB-A404-12EAE8769CAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0FC43143-A41B-48EB-A404-12EAE8769CAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0FC43143-A41B-48EB-A404-12EAE8769CAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{972DC2AF-CA24-4C48-B019-F18DDA810EAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{972DC2AF-CA24-4C48-B019-F18DDA810EAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{972DC2AF-CA24-4C48-B019-F18DDA810EAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{972DC2AF-CA24-4C48-B019-F18DDA810EAB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

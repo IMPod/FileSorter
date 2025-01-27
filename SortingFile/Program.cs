@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using SortingFile.Services;
+using Utilities.Constants;
 
 namespace SortingFile;
 
@@ -11,8 +12,8 @@ internal static class Program
 
     public static async Task Main(string[] args)
     {       
-        string inputFile = args.Length > 0 ? args[0] : "big_parallel.txt";
-        string outputFile = args.Length > 1 ? args[1] : "big_parallel_sort.txt";
+        string inputFile = args.Length > 0 ? args[0] : Setting.GENERATED_FILE;
+        string outputFile = args.Length > 1 ? args[1] : Setting.ORDERED_FILE;
 
         Console.WriteLine("Starting external sort...");
 

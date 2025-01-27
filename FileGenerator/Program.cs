@@ -1,6 +1,7 @@
 ﻿using FileGenerator.Models;
 using FileGenerator.Services;
 using System.Diagnostics;
+using Utilities.Constants;
 
 namespace FileGenerator;
 
@@ -19,9 +20,9 @@ internal static class Program
     {
         IGeneraterService generaterService = new GeneraterService();
 
-        string outputPath = args.Length > 0 ? args[0] : "big_parallel.txt";
-        long totalLines = args.Length > 1 ? long.Parse(args[1]) : 4_000_000_00;
-        int chunkCount = args.Length > 2 ? int.Parse(args[2]) : 8;
+        string outputPath = args.Length > 0 ? args[0] : Setting.GENERATED_FILE;
+        long totalLines = args.Length > 1 ? long.Parse(args[1]) : Setting.TOTALLINES;
+        int chunkCount = args.Length > 2 ? int.Parse(args[2]) : Setting.CHUNKCOUNT;
 
         var config = new GeneratorConfig(totalLines, outputPath, chunkCount);
         config.Validate();
