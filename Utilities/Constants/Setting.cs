@@ -4,10 +4,13 @@ public static class Setting
 {
     public const string GENERATED_FILE = "C:\\temp\\big_parallel.txt";
     public const string ORDERED_FILE = "C:\\temp\\big_parallel_sort.txt";
-    public const long TOTALLINES = 4_000_000_00;
+    public const long TOTALLINES = 4_000_000_0;
     public const int CHUNKCOUNT = 8;
     public const long MAX_CHUNK_SIZE_BYTES = 50_000_000_0;// ~500MB
     public const int MAX_PARALLELSORTERS = 4;
+
+    public const int BIGBUFFERSIZE = 1_048_576;//1mb
+    public const int SMALLBUFFERSIZE = 65536;//64kb
 
     /*
      *  
@@ -25,7 +28,7 @@ public static class Setting
         Starting k-way merge...
         External sort completed in 00:01:41.9253273.
 
-
+-------------------------------
 
 
         [Generator] Will generate 40000000 lines in 10 chunks.
@@ -52,20 +55,19 @@ public static class Setting
         External sort completed in 00:01:43.9857495.
     -----------------------
 
-        MAX_CHUNK_SIZE_BYTES = 50_000_000_0;
-        MAX_PARALLELSORTERS = 8;
-
         [Generator] Will generate 400000000 lines in 8 chunks.
         [Generator] Final file will be: C:\temp\big_parallel.txt
         [Generator] Chunk generation completed in 00:00:12.6934353.
         [Generator] Concatenating all chunks into a single file...
         [Generator] Done! Total time: 00:01:45.3847963.
+            
+        MAX_CHUNK_SIZE_BYTES = 50_000_000_0;
+        MAX_PARALLELSORTERS = 8;
 
         Starting external sort...
         Chunks created. Elapsed: 00:13:43.9080654
         Starting k-way merge...
         External sort completed in 00:24:03.1965420.
-
 
 
         [Generator] Will generate 400000000 lines in 20 chunks.
@@ -86,14 +88,16 @@ public static class Setting
         [Generator] Concatenating all chunks into a single file...
         [Generator] Done! Total time: 00:01:44.1119826.
     ------------------------
-        MAX_CHUNK_SIZE_BYTES = 50_000_000_0;
-        MAX_PARALLELSORTERS = 2;
+        
 
         [Generator] Will generate 4000000000 lines in 8 chunks.
         [Generator] Final file will be: C:\temp\big_parallel.txt
         [Generator] Chunk generation completed in 00:04:31.3565990.
         [Generator] Concatenating all chunks into a single file...
         [Generator] Done! Total time: 00:22:03.8313290.
+
+        MAX_CHUNK_SIZE_BYTES = 50_000_000_0;
+        MAX_PARALLELSORTERS = 2;
 
         Starting external sort...
         Chunks created. Elapsed: 01:40:37.5216843

@@ -67,7 +67,7 @@ internal class ExternalSortService : IExternalSortService
 
             await InitializePriorityQueue(readers, pq);
 
-            using var outFs = new FileStream(outputFile, FileMode.Create, FileAccess.Write, FileShare.None, 65536, FileOptions.SequentialScan);
+            using var outFs = new FileStream(outputFile, FileMode.Create, FileAccess.Write, FileShare.None, Setting.SMALLBUFFERSIZE, FileOptions.SequentialScan);
             using var outWriter = new StreamWriter(outFs, Encoding.UTF8);
 
             while (pq.Count > 0)
@@ -147,7 +147,7 @@ internal class ExternalSortService : IExternalSortService
     {
         try
         {
-            using var fs = new FileStream(inputFile, FileMode.Open, FileAccess.Read, FileShare.Read, 1_048_576, FileOptions.SequentialScan);
+            using var fs = new FileStream(inputFile, FileMode.Open, FileAccess.Read, FileShare.Read, Setting.BIGBUFFERSIZE, FileOptions.SequentialScan);
             using var reader = new StreamReader(fs, Encoding.UTF8);
 
             bool endOfFile = false;
@@ -215,7 +215,7 @@ internal class ExternalSortService : IExternalSortService
 
         try
         {
-            using var outFs = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None, 1_048_576, FileOptions.SequentialScan);
+            using var outFs = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None, Setting.BIGBUFFERSIZE, FileOptions.SequentialScan);
             using var writer = new StreamWriter(outFs, Encoding.UTF8);
 
             foreach (var item in chunkData)
@@ -252,7 +252,7 @@ internal class ExternalSortService : IExternalSortService
         var readers = new List<StreamReader>(chunkFiles.Count);
         foreach (var file in chunkFiles)
         {
-            var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 65536, FileOptions.SequentialScan);
+            var fs = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, Setting.SMALLBUFFERSIZE, FileOptions.SequentialScan);
             readers.Add(new StreamReader(fs, Encoding.UTF8));
         }
         return readers;

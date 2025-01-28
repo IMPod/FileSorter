@@ -1,9 +1,11 @@
 ﻿using FileGenerator.Models;
+using Utilities.Constants;
 
 namespace FileGenerator.Services;
 
 internal class GeneraterService : IGeneraterService
 {
+    private const int _randomSize = 1_000_000_000;
     /// <summary>
     /// Splits the total line count into 'ChunkCount' parts, 
     /// generates each part in parallel, and returns the list of temporary files.
@@ -67,7 +69,7 @@ internal class GeneraterService : IGeneraterService
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.None,
-                bufferSize: 65536,
+                bufferSize: Setting.SMALLBUFFERSIZE,
                 FileOptions.SequentialScan
             );
             using var writer = new StreamWriter(fs, System.Text.Encoding.UTF8);
@@ -77,7 +79,7 @@ internal class GeneraterService : IGeneraterService
 
             for (long i = 0; i < countLines; i++)
             {
-                long number = random.NextInt64(1, 1_000_000_000);
+                long number = random.NextInt64(1, _randomSize);
                 string text = texts[random.Next(sampleCount)];
                 writer.WriteLine($"{number}. {text}");
             }
@@ -101,7 +103,7 @@ internal class GeneraterService : IGeneraterService
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.None,
-                bufferSize: 65536,
+                bufferSize: Setting.SMALLBUFFERSIZE,
                 FileOptions.SequentialScan
             );
             using var writer = new StreamWriter(outStream, System.Text.Encoding.UTF8);
@@ -117,7 +119,7 @@ internal class GeneraterService : IGeneraterService
                         FileMode.Open,
                         FileAccess.Read,
                         FileShare.Read,
-                        bufferSize: 65536,
+                        bufferSize: Setting.SMALLBUFFERSIZE,
                         FileOptions.SequentialScan
                     );
                     using var reader = new StreamReader(inStream, System.Text.Encoding.UTF8);
