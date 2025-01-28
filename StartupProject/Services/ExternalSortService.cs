@@ -8,17 +8,14 @@ namespace SortingFile.Services;
 /// <summary>
 /// Provides methods for external file sorting using chunk splitting, parallel sorting, and k-way merge.
 /// </summary>
-internal class ExternalSortService : IExternalSortService
+internal class ExternalSortService(long maxChunkSizeBytes, int maxParallelSorters) : IExternalSortService
 {
-    private const long MaxChunkSizeBytes = Setting.MAX_CHUNK_SIZE_BYTES;
-    private readonly int _maxParallelSorters = Setting.MAX_PARALLELSORTERS;
-
     /// <summary>
     /// Splits the input file into chunks, sorts them in parallel, and returns the temporary sorted files.
     /// </summary>
     public async Task<List<string>> SplitAndSortChunks(string inputFile)
     {
-        var chunkQueue = new BlockingCollection<List<NumberStringLine>>(_maxParallelSorters * 2);
+        var chunkQueue = new BlockingCollection<List<NumberStringLine>>(maxParallelSorters * 2);
         var tempFiles = new ConcurrentBag<string>();
 
         var sortTasks = StartParallelSorters(chunkQueue, tempFiles);
@@ -103,7 +100,7 @@ internal class ExternalSortService : IExternalSortService
     {
         var tasks = new List<Task>();
 
-        for (int i = 0; i < _maxParallelSorters; i++)
+        for (int i = 0; i < maxParallelSorters; i++)
         {
             tasks.Add(Task.Run(async () =>
             {
@@ -178,7 +175,7 @@ internal class ExternalSortService : IExternalSortService
         long currentChunkSize = 0;
         var chunkData = new List<NumberStringLine>(100_000);
 
-        while (currentChunkSize < MaxChunkSizeBytes)
+        while (currentChunkSize < maxChunkSizeBytes)
         {
             string line;
             try
