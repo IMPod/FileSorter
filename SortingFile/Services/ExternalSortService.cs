@@ -23,10 +23,29 @@ internal class ExternalSortService : IExternalSortService
 
         var sortTasks = StartParallelSorters(chunkQueue, tempFiles);
 
-        await ProduceChunksAsync(inputFile, chunkQueue);
-        chunkQueue.CompleteAdding();
+        try
+        {
+            await ProduceChunksAsync(inputFile, chunkQueue);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during chunk production: {ex.Message}");
+            throw;
+        }
+        finally
+        {
+            chunkQueue.CompleteAdding();
+        }
 
-        await Task.WhenAll(sortTasks);
+        try
+        {
+            await Task.WhenAll(sortTasks);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during parallel sorting: {ex.Message}");
+            throw;
+        }
 
         return tempFiles.ToList();
     }
@@ -36,39 +55,51 @@ internal class ExternalSortService : IExternalSortService
     /// </summary>
     public async Task MergeSortedChunks(List<string> chunkFiles, string outputFile)
     {
-        var readers = OpenChunkReaders(chunkFiles);
-        var comparer = new NumberStringLineComparer();
-
-        var pq = new PriorityQueue<(NumberStringLine line, int readerIndex), NumberStringLine>(
-            new PriorityLineComparerAdapter(comparer)
-        );
-
-        await InitializePriorityQueue(readers, pq);
-
-        using var outFs = new FileStream(outputFile, FileMode.Create, FileAccess.Write, FileShare.None, 65536, FileOptions.SequentialScan);
-        using var outWriter = new StreamWriter(outFs, Encoding.UTF8);
-
-        while (pq.Count > 0)
+        List<StreamReader>? readers = null;
+        try
         {
-            var (line, idx) = pq.Dequeue();
-            await outWriter.WriteLineAsync($"{line.Number}. {line.Text}");
+            readers = OpenChunkReaders(chunkFiles);
+            var comparer = new NumberStringLineComparer();
 
-            var nextLine = await ReadOneLine(readers[idx]);
-            if (nextLine != null)
+            var pq = new PriorityQueue<(NumberStringLine line, int readerIndex), NumberStringLine>(
+                new PriorityLineComparerAdapter(comparer)
+            );
+
+            await InitializePriorityQueue(readers, pq);
+
+            using var outFs = new FileStream(outputFile, FileMode.Create, FileAccess.Write, FileShare.None, 65536, FileOptions.SequentialScan);
+            using var outWriter = new StreamWriter(outFs, Encoding.UTF8);
+
+            while (pq.Count > 0)
             {
-                pq.Enqueue((nextLine.Value, idx), nextLine.Value);
+                var (line, idx) = pq.Dequeue();
+                await outWriter.WriteLineAsync($"{line.Number}. {line.Text}");
+
+                var nextLine = await ReadOneLine(readers[idx]);
+                if (nextLine != null)
+                {
+                    pq.Enqueue((nextLine.Value, idx), nextLine.Value);
+                }
             }
         }
-
-        CloseReaders(readers);
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during merge operation: {ex.Message}");
+            throw;
+        }
+        finally
+        {
+            if (readers != null)
+            {
+                CloseReaders(readers);
+            }
+        }
     }
 
     /// <summary>
     /// Starts parallel tasks that take chunks from the queue, sort them, and save them to temporary files.
     /// </summary>
-    private List<Task> StartParallelSorters(
-        BlockingCollection<List<NumberStringLine>> chunkQueue,
-        ConcurrentBag<string> tempFiles)
+    private List<Task> StartParallelSorters(BlockingCollection<List<NumberStringLine>> chunkQueue, ConcurrentBag<string> tempFiles)
     {
         var tasks = new List<Task>();
 
@@ -90,10 +121,18 @@ internal class ExternalSortService : IExternalSortService
                         break;
                     }
 
-                    chunk.Sort(comparer);
+                    try
+                    {
+                        chunk.Sort(comparer);
 
-                    var tempFile = await SaveSortedChunkToFile(chunk);
-                    tempFiles.Add(tempFile);
+                        var tempFile = await SaveSortedChunkToFile(chunk);
+                        tempFiles.Add(tempFile);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error during chunk sorting: {ex.Message}");
+                        throw;
+                    }
                 }
             }));
         }
@@ -106,20 +145,28 @@ internal class ExternalSortService : IExternalSortService
     /// </summary>
     private async Task ProduceChunksAsync(string inputFile, BlockingCollection<List<NumberStringLine>> chunkQueue)
     {
-        using var fs = new FileStream(inputFile, FileMode.Open, FileAccess.Read, FileShare.Read, 1_048_576, FileOptions.SequentialScan);
-        using var reader = new StreamReader(fs, Encoding.UTF8);
-
-        bool endOfFile = false;
-
-        while (!endOfFile)
+        try
         {
-            var (chunkData, reachedEnd) = await ReadNextChunk(reader);
-            endOfFile = reachedEnd;
+            using var fs = new FileStream(inputFile, FileMode.Open, FileAccess.Read, FileShare.Read, 1_048_576, FileOptions.SequentialScan);
+            using var reader = new StreamReader(fs, Encoding.UTF8);
 
-            if (chunkData.Count > 0)
+            bool endOfFile = false;
+
+            while (!endOfFile)
             {
-                chunkQueue.Add(chunkData);
+                var (chunkData, reachedEnd) = await ReadNextChunk(reader);
+                endOfFile = reachedEnd;
+
+                if (chunkData.Count > 0)
+                {
+                    chunkQueue.Add(chunkData);
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error during chunk reading: {ex.Message}");
+            throw;
         }
     }
 
@@ -133,7 +180,17 @@ internal class ExternalSortService : IExternalSortService
 
         while (currentChunkSize < MaxChunkSizeBytes)
         {
-            var line = await reader.ReadLineAsync();
+            string line;
+            try
+            {
+                line = await reader.ReadLineAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading line: {ex.Message}");
+                throw;
+            }
+
             if (line == null)
             {
                 return (chunkData, true);
@@ -156,12 +213,20 @@ internal class ExternalSortService : IExternalSortService
     {
         var tempFile = Path.GetTempFileName();
 
-        using var outFs = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None, 1_048_576, FileOptions.SequentialScan);
-        using var writer = new StreamWriter(outFs, Encoding.UTF8);
-
-        foreach (var item in chunkData)
+        try
         {
-            await writer.WriteLineAsync($"{item.Number}. {item.Text}");
+            using var outFs = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None, 1_048_576, FileOptions.SequentialScan);
+            using var writer = new StreamWriter(outFs, Encoding.UTF8);
+
+            foreach (var item in chunkData)
+            {
+                await writer.WriteLineAsync($"{item.Number}. {item.Text}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving sorted chunk: {ex.Message}");
+            throw;
         }
 
         return tempFile;
