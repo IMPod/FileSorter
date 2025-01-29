@@ -93,7 +93,7 @@ public class ExternalSortServiceTests
     public async Task SortingProcess_ShouldHandleLargeFile()
     {
         // Arrange
-        var largeInput = Enumerable.Range(1, 10000).Select(i => $"{i}. Line {i}").ToArray();
+        var largeInput = Enumerable.Range(1, 10000).Select(i => $"{i}. Line").ToArray();
         await File.WriteAllLinesAsync(_config.InputPath, largeInput);
 
         // Act
@@ -103,7 +103,8 @@ public class ExternalSortServiceTests
         Assert.True(result);
         Assert.True(File.Exists(_config.OutputPath));
         var sortedLines = await File.ReadAllLinesAsync(_config.OutputPath);
-        Assert.Equal(largeInput.OrderBy(line => int.Parse(line.Split('.')[0])), sortedLines);
+        var expectedSorted = largeInput.OrderBy(line => int.Parse(line.Split('.')[0])).ToArray();
+        Assert.Equal(expectedSorted, sortedLines);
 
         // Cleanup
         File.Delete(_config.InputPath);

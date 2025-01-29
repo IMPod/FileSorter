@@ -6,8 +6,8 @@ using SortingFile.Services;
 using FileSorter.StartupProject.Models;
 
 
-bool validChoice = false;
-string userInput = "";
+var validChoice = false;
+var userInput = "";
 
 var builder = new ConfigurationBuilder()
                .SetBasePath(Directory.GetCurrentDirectory())
@@ -31,7 +31,7 @@ while (!validChoice)
     Console.WriteLine("2 Sorting File");
 
     Console.Write("Your chousing: ");
-    userInput = Console.ReadLine();
+    userInput = Console.ReadLine()!;
 
     switch (userInput)
     {
@@ -97,8 +97,8 @@ async Task GenerateFileAsync()
 async Task SortingFileAsync()
 {
 
-    bool isOptionIntParsed = int.TryParse(MAX_PARALLELSORTERS, out int maxParallelSorters);
-    bool isOptionLongParsed = long.TryParse(MAX_CHUNK_SIZE_BYTES, out long maxChunkSizeBytes);
+    var isOptionIntParsed = int.TryParse(MAX_PARALLELSORTERS, out int maxParallelSorters);
+    var isOptionLongParsed = long.TryParse(MAX_CHUNK_SIZE_BYTES, out long maxChunkSizeBytes);
 
     var config = new SortingConfig(GENERATED_FILE!, ORDERED_FILE!, maxChunkSizeBytes, maxParallelSorters);
     config.Validate();
