@@ -3,6 +3,7 @@ using System.Diagnostics;
 using FileGenerator.Models;
 using FileGenerator.Services;
 using SortingFile.Services;
+using FileSorter.StartupProject.Models;
 
 
 bool validChoice = false;
@@ -60,7 +61,7 @@ async Task GenerateFileAsync()
     bool isOptionIntParsed = int.TryParse(CHUNKCOUNT, out int optionInt);
     bool isOptionLongParsed = long.TryParse(TOTALLINES, out long optionLong);
 
-    if (isOptionIntParsed || isOptionLongParsed)
+    if (!isOptionIntParsed || !isOptionLongParsed)
     {
         Console.WriteLine("Invalid CHUNKCOUNT OR TOTALLINES");
         return;
@@ -96,37 +97,20 @@ async Task GenerateFileAsync()
 async Task SortingFileAsync()
 {
 
-    bool isOptionIntParsed = int.TryParse(CHUNKCOUNT, out int optionInt);
-    bool isOptionLongParsed = long.TryParse(TOTALLINES, out long optionLong);
+    bool isOptionIntParsed = int.TryParse(MAX_PARALLELSORTERS, out int maxParallelSorters);
+    bool isOptionLongParsed = long.TryParse(MAX_CHUNK_SIZE_BYTES, out long maxChunkSizeBytes);
 
-    if (isOptionIntParsed || isOptionLongParsed)
-    {
-        Console.WriteLine("Invalid CHUNKCOUNT OR TOTALLINES");
-        return;
-    }
-    var maxChunkSizeBytes = optionLong;
-    var maxParallelSorters = optionInt;
+    var config = new SortingConfig(GENERATED_FILE!, ORDERED_FILE!, maxChunkSizeBytes, maxParallelSorters);
+    config.Validate();
 
-    var inputFile =  GENERATED_FILE;
-    var outputFile = ORDERED_FILE;
 
-    IExternalSortService _externalSortService = new ExternalSortService(maxChunkSizeBytes, maxParallelSorters);
+    IExternalSortService _externalSortService = new ExternalSortService(config);
 
     Console.WriteLine("[Sorting] Starting external sort...");
 
-    var stopwatch = Stopwatch.StartNew();
-    List<string> sortedChunkFiles = await _externalSortService.SplitAndSortChunks(inputFile);
+    
+    var result = await _externalSortService.SplitAndSortChunks(config.InputPath);
 
-    Console.WriteLine($"[Sorting] Chunks created. Elapsed: {stopwatch.Elapsed}");
-    Console.WriteLine("[Sorting] Starting k-way merge...");
-
-    await _externalSortService.MergeSortedChunks(sortedChunkFiles, outputFile);
-
-    foreach (var file in sortedChunkFiles)
-    {
-        File.Delete(file);
-    }
-
-    stopwatch.Stop();
-    Console.WriteLine($"[Sorting] External sort completed in {stopwatch.Elapsed}.");
+    if(result)
+        Console.WriteLine("[Sorting] Done!");
 }

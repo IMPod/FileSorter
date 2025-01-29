@@ -3,7 +3,7 @@ using Utilities.Constants;
 
 namespace FileGenerator.Services;
 
-internal class GeneraterService : IGeneraterService
+public class GeneraterService : IGeneraterService
 {
     private const int _randomSize = 1_000_000_000;
     /// <summary>
@@ -58,7 +58,7 @@ internal class GeneraterService : IGeneraterService
     /// Generates 'countLines' lines and writes them to 'tempFile'.
     /// Each line follows the format: "<number>. <text>"
     /// </summary>
-    private void GenerateOneChunk(string tempFile, long countLines, GeneratorConfig config)
+    public void GenerateOneChunk(string tempFile, long countLines, GeneratorConfig config)
     {
         try
         {
