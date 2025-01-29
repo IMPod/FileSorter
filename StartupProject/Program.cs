@@ -111,6 +111,11 @@ async Task SortingFileAsync()
     
     var result = await _externalSortService.SplitAndSortChunks(config.InputPath);
 
-    if(result)
+    //if (!_externalSortService.IsOutputFileSorted(config.OutputPath)) //checking output file
+    //{
+    //    throw new InvalidOperationException("The final output file is not sorted correctly.");
+    //}
+
+    if (result)
         Console.WriteLine("[Sorting] Done!");
 }

@@ -338,4 +338,26 @@ public class ExternalSortService(SortingConfig config) : IExternalSortService
         var (ok, parsed) = ParseLine(line);
         return ok ? parsed : null;
     }
+
+    public bool IsOutputFileSorted(string outputFile)
+    {
+        var previousLine = default(NumberStringLine);
+        using var reader = new StreamReader(outputFile, Encoding.UTF8);
+        while (!reader.EndOfStream)
+        {
+            var line = reader.ReadLine();
+            var (ok, parsed) = ParseLine(line);
+            if (!ok || parsed == null)
+            {
+                throw new InvalidOperationException("Invalid line format in output file.");
+            }
+
+            if (previousLine != null && (previousLine.Number > parsed.Number && previousLine.Text == parsed.Text))
+            {
+                return false;
+            }
+            previousLine = parsed;
+        }
+        return true;
+    }
 }

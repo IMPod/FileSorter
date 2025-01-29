@@ -7,6 +7,19 @@ public static class Setting
 
     /*
      *  
+     *  "TOTALLINES": "400000000" ~ 10gb
+        "MAX_CHUNK_SIZE_BYTES": "500000000", // ~500MB
+        "MAX_PARALLELSORTERS": "8"
+
+     *  [Sorting] Starting external sort...
+        [Sorting] Starting chunk production...
+        [Sorting] Chunk production completed.
+        [Sorting] Starting parallel sorting...
+        [Sorting] Parallel sorting completed.
+        [Sorting] Starting k-way merge...
+        [Sorting] Delete temp files. Elapsed: 00:22:38.4543061
+        [Sorting] External sort completed in 00:22:38.9615911.
+     *  
         [Generator] Will generate 4000000000 lines in 8 chunks.
         [Generator] Final file will be: C:\temp\big_parallel.txt
         [Generator] Chunk generation completed in 00:04:31.3565990.
