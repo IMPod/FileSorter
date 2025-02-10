@@ -7,13 +7,12 @@ using FileSorter.StartupProject.Models;
 
 
 var validChoice = false;
-var userInput = "";
 
 var builder = new ConfigurationBuilder()
                .SetBasePath(Directory.GetCurrentDirectory())
                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
-IConfigurationRoot configuration = builder.Build();
+var configuration = builder.Build();
 
 var GENERATED_FILE = configuration.GetSection("Settings")["GENERATED_FILE"];
 var ORDERED_FILE = configuration.GetSection("Settings")["ORDERED_FILE"];
@@ -22,7 +21,7 @@ var CHUNKCOUNT = configuration.GetSection("Settings")["CHUNKCOUNT"];
 var MAX_CHUNK_SIZE_BYTES = configuration.GetSection("Settings")["MAX_CHUNK_SIZE_BYTES"];
 var MAX_PARALLELSORTERS = configuration.GetSection("Settings")["MAX_PARALLELSORTERS"];
 
-
+var _cancellationToken = new CancellationToken();
 while (!validChoice)
 {
     Console.Clear();
@@ -31,7 +30,7 @@ while (!validChoice)
     Console.WriteLine("2 Sorting File");
 
     Console.Write("Your chousing: ");
-    userInput = Console.ReadLine()!;
+    var userInput = Console.ReadLine()!;
 
     switch (userInput)
     {
@@ -41,7 +40,7 @@ while (!validChoice)
             break;
         case "2":
             validChoice = true;
-            await SortingFileAsync();
+            await SortingFileAsync(_cancellationToken);
             break;
         default:
             Console.WriteLine("Invalid entry. Please enter 1 or 2.");
@@ -58,18 +57,16 @@ async Task GenerateFileAsync()
     IGeneraterService generaterService = new GeneraterService();
 
     var outputPath = GENERATED_FILE;
-    bool isOptionIntParsed = int.TryParse(CHUNKCOUNT, out int optionInt);
-    bool isOptionLongParsed = long.TryParse(TOTALLINES, out long optionLong);
+    var isOptionIntParsed = int.TryParse(CHUNKCOUNT, out var optionInt);
+    var isOptionLongParsed = long.TryParse(TOTALLINES, out var optionLong);
 
     if (!isOptionIntParsed || !isOptionLongParsed)
     {
         Console.WriteLine("Invalid CHUNKCOUNT OR TOTALLINES");
         return;
     }
-    var totalLines = optionLong;
-    var chunkCount = optionInt;
 
-    var config = new GeneratorConfig(totalLines, outputPath, chunkCount);
+    var config = new GeneratorConfig(optionLong, outputPath, optionInt);
     config.Validate();
 
     Console.WriteLine($"[Generator] Will generate {config.TotalLines} lines in {config.ChunkCount} chunks.");
@@ -94,27 +91,22 @@ async Task GenerateFileAsync()
     Console.WriteLine($"[Generator] Done! Total time: {sw.Elapsed}.");
 }
 
-async Task SortingFileAsync()
+async Task SortingFileAsync(CancellationToken cancellationToken)
 {
 
-    var isOptionIntParsed = int.TryParse(MAX_PARALLELSORTERS, out int maxParallelSorters);
-    var isOptionLongParsed = long.TryParse(MAX_CHUNK_SIZE_BYTES, out long maxChunkSizeBytes);
+    int.TryParse(MAX_PARALLELSORTERS, out var maxParallelSorters);
+    long.TryParse(MAX_CHUNK_SIZE_BYTES, out var maxChunkSizeBytes);
 
     var config = new SortingConfig(GENERATED_FILE!, ORDERED_FILE!, maxChunkSizeBytes, maxParallelSorters);
     config.Validate();
 
 
-    IExternalSortService _externalSortService = new ExternalSortService(config);
+    IExternalSortService externalSortService = new ExternalSortService(config);
 
     Console.WriteLine("[Sorting] Starting external sort...");
 
     
-    var result = await _externalSortService.SplitAndSortChunks(config.InputPath);
-
-    //if (!_externalSortService.IsOutputFileSorted(config.OutputPath)) //checking output file
-    //{
-    //    throw new InvalidOperationException("The final output file is not sorted correctly.");
-    //}
+    var result = await externalSortService.SplitAndSortChunks(config.InputPath, cancellationToken);
 
     if (result)
         Console.WriteLine("[Sorting] Done!");

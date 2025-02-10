@@ -23,9 +23,9 @@ public class ExternalSortServiceTests
     {
         // Arrange
         await File.WriteAllLinesAsync(_config.InputPath, new[] { "3. C", "1. A", "2. B", "5. E", "4. D" });
-
+        var cancellationToken = new CancellationToken();
         // Act
-        bool result = await _service.SplitAndSortChunks(_config.InputPath);
+        bool result = await _service.SplitAndSortChunks(_config.InputPath, cancellationToken);
 
         // Assert
         Assert.True(result);
@@ -44,9 +44,10 @@ public class ExternalSortServiceTests
     {
         // Arrange
         await File.WriteAllLinesAsync(_config.InputPath, Array.Empty<string>());
+        var cancellationToken = new CancellationToken();
 
         // Act
-        bool result = await _service.SplitAndSortChunks(_config.InputPath);
+        bool result = await _service.SplitAndSortChunks(_config.InputPath, cancellationToken);
 
         // Assert
         Assert.True(result);
@@ -74,9 +75,10 @@ public class ExternalSortServiceTests
     {
         // Arrange
         await File.WriteAllLinesAsync(_config.InputPath, new[] { "3. C", "Invalid line", "2. B" });
+        var cancellationToken = new CancellationToken();
 
         // Act
-        bool result = await _service.SplitAndSortChunks(_config.InputPath);
+        bool result = await _service.SplitAndSortChunks(_config.InputPath, cancellationToken);
 
         // Assert
         Assert.True(result);
@@ -95,9 +97,10 @@ public class ExternalSortServiceTests
         // Arrange
         var largeInput = Enumerable.Range(1, 10000).Select(i => $"{i}. Line").ToArray();
         await File.WriteAllLinesAsync(_config.InputPath, largeInput);
+        var cancellationToken = new CancellationToken();
 
         // Act
-        bool result = await _service.SplitAndSortChunks(_config.InputPath);
+        bool result = await _service.SplitAndSortChunks(_config.InputPath, cancellationToken);
 
         // Assert
         Assert.True(result);
@@ -118,9 +121,10 @@ public class ExternalSortServiceTests
         _config = new SortingConfig(_config.InputPath, _config.OutputPath, _config.MaxChunkSizeBytes, 8);
         var inputLines = new[] { "3. C", "1. A", "2. B", "5. E", "4. D" };
         await File.WriteAllLinesAsync(_config.InputPath, inputLines);
+        var cancellationToken = new CancellationToken();
 
         // Act
-        bool result = await _service.SplitAndSortChunks(_config.InputPath);
+        bool result = await _service.SplitAndSortChunks(_config.InputPath, cancellationToken);
 
         // Assert
         Assert.True(result);
