@@ -1,21 +1,15 @@
 ﻿namespace FileGenerator.Models;
 
-/// <summary>
-/// Configuration class using C# 12 primary constructor.
-/// It holds settings for file generation.
-/// </summary>
 public class GeneratorConfig(
     long TotalLines,    // Total number of lines to generate
     string OutputPath,  // Final output file path
     int ChunkCount = 8  // Number of chunks to split into (default 8)
 )
 {
-    // Properties automatically bound to primary constructor parameters
     public long TotalLines { get; } = TotalLines;
     public string OutputPath { get; } = OutputPath;
     public int ChunkCount { get; } = ChunkCount;
 
-    // Example texts to randomly choose from; using a C# 12 collection expression
     public string[] SampleTexts { get; } = [
             "Apple",
             "Banana is yellow",
